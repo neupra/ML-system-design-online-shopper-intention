@@ -4,6 +4,8 @@ stages:
     deps:
       - src/preprocess.py
       - data/online_shoppers_intention.csv
+    params:
+      - balancing  
     outs:
       - data/processed/online_shoppers_intention_prepared.csv
       - data/processed/preprocessor.joblib
