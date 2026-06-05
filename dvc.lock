@@ -10,17 +10,17 @@ stages:
       size: 1071988
     - path: src/preprocess.py
       hash: md5
-      md5: f71c341e42c71ec68f0b5df5785c4c3e
-      size: 8159
+      md5: a33d44a713f269b10cd619e58c6345d5
+      size: 8367
     outs:
     - path: data/processed/metadata.json
       hash: md5
-      md5: 839453378b1e1c833ba789ab0ca4af2a
-      size: 495
+      md5: ab47e0934f95a099f68b2711fbf5ee42
+      size: 499
     - path: data/processed/online_shoppers_intention_prepared.csv
       hash: md5
-      md5: ff1b67a9239b8beae5db4c2581f48cbf
-      size: 11618012
+      md5: 25e2e0782c5974150bf6f03315528846
+      size: 11488416
     - path: data/processed/preprocessor.joblib
       hash: md5
       md5: c5f8918fcbff6376fb6c7fb18de27899
@@ -31,8 +31,8 @@ stages:
     deps:
     - path: data/processed/online_shoppers_intention_prepared.csv
       hash: md5
-      md5: ff1b67a9239b8beae5db4c2581f48cbf
-      size: 11618012
+      md5: 25e2e0782c5974150bf6f03315528846
+      size: 11488416
     - path: src/split.py
       hash: md5
       md5: e26b02819e6265e8e51be64ce0e0218b
@@ -45,19 +45,19 @@ stages:
     outs:
     - path: data/prepared/test.csv
       hash: md5
-      md5: 8cc4a3d7a89e46ecd33bbfc4f3cbc225
-      size: 2293900
+      md5: fd12ec67798bed095b0322ec7d8c28b5
+      size: 2268314
     - path: data/prepared/train.csv
       hash: md5
-      md5: 1a47dc49a401b2f525cf82ff1e23fb8a
-      size: 9177787
+      md5: f6b33e4e1815d3606239419938165ea0
+      size: 9077112
   train:
     cmd: python src/train.py data/prepared/train.csv models/model.joblib
     deps:
     - path: data/prepared/train.csv
       hash: md5
-      md5: 1a47dc49a401b2f525cf82ff1e23fb8a
-      size: 9177787
+      md5: f6b33e4e1815d3606239419938165ea0
+      size: 9077112
     - path: src/train.py
       hash: md5
       md5: 313044105b093efa3f4de421151900f1
@@ -72,20 +72,20 @@ stages:
     outs:
     - path: models/model.joblib
       hash: md5
-      md5: d986147ea7e3c09a70236841906baf47
-      size: 8035065
+      md5: f543289d962081727c1a77db3fec479e
+      size: 8213945
   evaluate:
     cmd: python src/evaluate.py models/model.joblib data/prepared/test.csv 
       metrics/metrics.json
     deps:
     - path: data/prepared/test.csv
       hash: md5
-      md5: 8cc4a3d7a89e46ecd33bbfc4f3cbc225
-      size: 2293900
+      md5: fd12ec67798bed095b0322ec7d8c28b5
+      size: 2268314
     - path: models/model.joblib
       hash: md5
-      md5: d986147ea7e3c09a70236841906baf47
-      size: 8035065
+      md5: f543289d962081727c1a77db3fec479e
+      size: 8213945
     - path: src/evaluate.py
       hash: md5
       md5: 961a7b41abcef6a4ba7b450d7c48b953
@@ -93,5 +93,5 @@ stages:
     outs:
     - path: metrics/metrics.json
       hash: md5
-      md5: 30fd937888fd6cef300a60472578bc92
+      md5: 2f928554c1464a09461a5cb4bd3fec41
       size: 176
