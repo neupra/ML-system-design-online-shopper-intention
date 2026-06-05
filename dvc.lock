@@ -12,6 +12,10 @@ stages:
       hash: md5
       md5: a33d44a713f269b10cd619e58c6345d5
       size: 8367
+    params:
+      params.yaml:
+        preprocess:
+          balancing: smoteenn
     outs:
     - path: data/processed/metadata.json
       hash: md5
