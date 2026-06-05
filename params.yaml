@@ -9,7 +9,7 @@ train:
   random_state: 42
 
 preprocess:
-  balancing: smotetomek       #smote -SMOTE 
+  balancing: smoteenn       #smote -SMOTE 
                           # adasyn -ADASYN
                           #borderline_smote -BorderlineSMOTE
                           #random_oversample -RandomOverSampler
