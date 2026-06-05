@@ -9,28 +9,16 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
-from imblearn.combine import SMOTETomek, SMOTEENN
-from imblearn.under_sampling import RandomUnderSampler, TomekLinks, NearMiss
+from imblearn.over_sampling import SMOTE
 
 # ======================================================================
-# PATHS & PARAMS
+# PATHS
 # ======================================================================
-RAW_DATA_PATH = Path(sys.argv[1])
-OUTPUT_DIR = Path(sys.argv[2])
+RAW_DATA_PATH = Path(sys.argv[1])       # Input: raw CSV
+OUTPUT_DIR = Path(sys.argv[2])          # Output: folder to save artifacts
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-import yaml
-params = yaml.safe_load(open("params.yaml"))["preprocess"]
-BALANCING = params["balancing"]  # smote / adasyn / smotetomek / smoteenn /
-                                  # borderline_smote / random_oversample /
-                                  # random_undersample / tomeklinks / nearmiss / none
-
 TARGET_COL = "Revenue"
-
-print("=" * 60)
-print(f"Balancing technique: {BALANCING.upper()}")
-print("=" * 60)
 
 # ======================================================================
 # STEP 1: LOAD RAW DATA
@@ -122,6 +110,7 @@ preprocessor = ColumnTransformer(
 # ======================================================================
 X_processed = preprocessor.fit_transform(X)
 
+# Get feature names
 cat_transformer = preprocessor.named_transformers_.get("cat")
 encoder = cat_transformer.named_steps.get("encoder") if hasattr(cat_transformer, "named_steps") else cat_transformer
 try:
@@ -133,40 +122,14 @@ processed_feature_names = list(numerical_features) + list(cat_feature_names)
 X_processed_df = pd.DataFrame(X_processed, columns=processed_feature_names, index=X.index)
 
 print(f"Processed shape: {X_processed_df.shape[0]} rows x {X_processed_df.shape[1]} features")
+
+# ======================================================================
+# STEP 6: APPLY SMOTE
+# ======================================================================
 print(f"Original class distribution: {Counter(y)}")
-
-# ======================================================================
-# STEP 6: APPLY BALANCING TECHNIQUE
-# ======================================================================
-
-# Sampler selection
-samplers = {
-    "smote":              SMOTE(random_state=42),
-    "adasyn":             ADASYN(random_state=42),
-    "borderline_smote":   BorderlineSMOTE(random_state=42),
-    "random_oversample":  RandomOverSampler(random_state=42),
-    "smotetomek":         SMOTETomek(random_state=42),
-    "smoteenn":           SMOTEENN(random_state=42),
-    "random_undersample": RandomUnderSampler(random_state=42),
-    "tomeklinks":         TomekLinks(),
-    "nearmiss":           NearMiss(),
-    "none":               None,
-}
-
-if BALANCING not in samplers:
-    raise ValueError(
-        f"Unknown balancing technique: '{BALANCING}'\n"
-        f"Available: {list(samplers.keys())}"
-    )
-
-sampler = samplers[BALANCING]
-
-if sampler is not None:
-    X_resampled, y_resampled = sampler.fit_resample(X_processed_df, y)
-    print(f"After {BALANCING}: {Counter(y_resampled)}")
-else:
-    X_resampled, y_resampled = X_processed_df.values, y.values
-    print("No balancing applied.")
+sm = SMOTE(random_state=42)
+X_resampled, y_resampled = sm.fit_resample(X_processed_df, y)
+print(f"Resampled class distribution: {Counter(y_resampled)}")
 
 X_resampled_df = pd.DataFrame(X_resampled, columns=X_processed_df.columns)
 y_resampled_df = pd.Series(y_resampled, name=TARGET_COL)
@@ -178,31 +141,25 @@ y_resampled_df = pd.Series(y_resampled, name=TARGET_COL)
 # Save preprocessor
 joblib.dump(preprocessor, OUTPUT_DIR / "preprocessor.joblib")
 
-# Save final combined dataset
+# Save final combined dataset (SMOTE balanced)
 df_final = pd.concat([X_resampled_df, y_resampled_df], axis=1)
 df_final.to_csv(OUTPUT_DIR / "online_shoppers_intention_prepared.csv", index=False)
 
 # Save metadata
 metadata = {
-    "balancing_technique": BALANCING,
     "total_rows_original": len(df),
-    "total_rows_after_balancing": len(df_final),
+    "total_rows_after_smote": len(df_final),
     "total_features": X_resampled_df.shape[1],
     "target_name": TARGET_COL,
     "positive_rate_original": round(float(y.mean() * 100), 2),
-    "class_distribution_original": {str(k): int(v) for k, v in Counter(y).items()},
-    "class_distribution_after": {str(k): int(v) for k, v in Counter(y_resampled).items()},
-    "engineered_features": [
-        "TotalSessionDuration", "ProductInfoRatio",
-        "EngagementScore", "Month_sin", "Month_cos"
-    ],
+    "smote_applied": True,
+    "engineered_features": ["TotalSessionDuration", "ProductInfoRatio", "EngagementScore", "Month_sin", "Month_cos"],
 }
 with open(OUTPUT_DIR / "metadata.json", "w") as f:
     json.dump(metadata, f, indent=2)
 
 print("=" * 60)
 print("PREPROCESSING COMPLETE!")
-print(f"Balancing: {BALANCING}")
 print(f"Final dataset: {df_final.shape[0]} rows x {df_final.shape[1]} columns")
 print(f"Saved to: {OUTPUT_DIR}")
 print("=" * 60)
