@@ -1,0 +1,19 @@
+split:
+  test_size: 0.2
+  random_state: 42
+
+train:
+  model: random_forest
+  n_estimators: 100
+  max_depth: 12
+  random_state: 42
+
+preprocess:
+  balancing: smotetomek       #smote -SMOTE 
+                          # adasyn -ADASYN
+                          #borderline_smote -BorderlineSMOTE
+                          #random_oversample -RandomOverSampler
+                          #smotetomek -SMOTETomek
+                          #smoteenn -SMOTEENN
+                          #random_undersample -RandomUnderSampler
+                          #tomeklinks -TomekLinks
