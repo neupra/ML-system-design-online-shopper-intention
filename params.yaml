@@ -1,5 +1,5 @@
 preprocess:
-  balancing: borderline_smote       #smote -SMOTE 
+  balancing: smoteenn       #smote -SMOTE 
                           # adasyn -ADASYN
                           #borderline_smote -BorderlineSMOTE
                           #random_oversample -RandomOverSampler
