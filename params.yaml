@@ -13,7 +13,27 @@ split:
   random_state: 42
 
 train:
-  model: random_forest
-  n_estimators: 100
-  max_depth: 12
+  algorithm: "XGBoost"  # options: "LogisticRegression", "SVM", "RandomForest", "XGBoost"
   random_state: 42
+  
+ 
+  LogisticRegression:
+    C: 1.0
+    max_iter: 1000
+    
+  SVM:
+    C: 1.0
+    kernel: "rbf"
+    probability: true
+    
+  RandomForest:
+    n_estimators: 100
+    max_depth: 10
+    
+  XGBoost:
+    n_estimators: 150
+    learning_rate: 0.05
+    max_depth: 6
+    eval_metric: "logloss"
+    
+    

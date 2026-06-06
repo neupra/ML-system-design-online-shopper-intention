@@ -64,20 +64,33 @@ stages:
       size: 7595285
     - path: src/train.py
       hash: md5
-      md5: 313044105b093efa3f4de421151900f1
-      size: 746
+      md5: 81621f47f441e12a996d9c4fb2d47aef
+      size: 1803
     params:
       params.yaml:
         train:
-          model: random_forest
-          n_estimators: 100
-          max_depth: 12
+          algorithm: XGBoost
           random_state: 42
+          LogisticRegression:
+            C: 1.0
+            max_iter: 1000
+          SVM:
+            C: 1.0
+            kernel: rbf
+            probability: true
+          RandomForest:
+            n_estimators: 100
+            max_depth: 10
+          XGBoost:
+            n_estimators: 150
+            learning_rate: 0.05
+            max_depth: 6
+            eval_metric: logloss
     outs:
     - path: models/model.joblib
       hash: md5
-      md5: 44cbbeefa6de58fd3341fe4f7e20ad6c
-      size: 6357625
+      md5: 984c410b2ee5cf1e7403dfbb6d261326
+      size: 424354
   evaluate:
     cmd: python src/evaluate.py models/model.joblib data/prepared/test.csv 
       metrics/metrics.json
@@ -88,8 +101,8 @@ stages:
       size: 1900473
     - path: models/model.joblib
       hash: md5
-      md5: 44cbbeefa6de58fd3341fe4f7e20ad6c
-      size: 6357625
+      md5: 984c410b2ee5cf1e7403dfbb6d261326
+      size: 424354
     - path: src/evaluate.py
       hash: md5
       md5: 961a7b41abcef6a4ba7b450d7c48b953
@@ -97,5 +110,5 @@ stages:
     outs:
     - path: metrics/metrics.json
       hash: md5
-      md5: 1b4afdd5600b4f7a59b4b1f3f9a10789
-      size: 173
+      md5: 09c0788428bae6ee5c812811d18f110f
+      size: 176
