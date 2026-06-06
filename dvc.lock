@@ -69,7 +69,7 @@ stages:
     params:
       params.yaml:
         train:
-          algorithm: XGBoost
+          algorithm: SVM
           random_state: 42
           LogisticRegression:
             C: 1.0
@@ -89,8 +89,8 @@ stages:
     outs:
     - path: models/model.joblib
       hash: md5
-      md5: 984c410b2ee5cf1e7403dfbb6d261326
-      size: 424354
+      md5: cd918f76401e8296a667172d4a0bea77
+      size: 1977339
   evaluate:
     cmd: python src/evaluate.py models/model.joblib data/prepared/test.csv 
       metrics/metrics.json
@@ -101,8 +101,8 @@ stages:
       size: 1900473
     - path: models/model.joblib
       hash: md5
-      md5: 984c410b2ee5cf1e7403dfbb6d261326
-      size: 424354
+      md5: cd918f76401e8296a667172d4a0bea77
+      size: 1977339
     - path: src/evaluate.py
       hash: md5
       md5: 8d0d5dc14ca142a9d9ba0eda65cc2349
@@ -110,5 +110,5 @@ stages:
     outs:
     - path: metrics/metrics.json
       hash: md5
-      md5: 09c0788428bae6ee5c812811d18f110f
-      size: 176
+      md5: 10116be735a2d12a833bb4c21c2e7c0a
+      size: 174

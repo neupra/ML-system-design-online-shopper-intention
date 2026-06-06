@@ -13,7 +13,7 @@ split:
   random_state: 42
 
 train:
-  algorithm: "XGBoost"  # options: "LogisticRegression", "SVM", "RandomForest", "XGBoost"
+  algorithm: "SVM" # options: "LogisticRegression", "SVM", "RandomForest", "XGBoost"
   random_state: 42
   
  
