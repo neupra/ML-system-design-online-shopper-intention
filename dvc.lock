@@ -10,8 +10,8 @@ stages:
       size: 1071988
     - path: src/preprocess.py
       hash: md5
-      md5: a33d44a713f269b10cd619e58c6345d5
-      size: 8367
+      md5: f71c341e42c71ec68f0b5df5785c4c3e
+      size: 8159
     params:
       params.yaml:
         preprocess:
@@ -39,8 +39,8 @@ stages:
       size: 9616027
     - path: src/split.py
       hash: md5
-      md5: e26b02819e6265e8e51be64ce0e0218b
-      size: 872
+      md5: 9ed7654c4885a99c9082b2d736ad2063
+      size: 842
     params:
       params.yaml:
         split:
@@ -64,8 +64,8 @@ stages:
       size: 7595285
     - path: src/train.py
       hash: md5
-      md5: 81621f47f441e12a996d9c4fb2d47aef
-      size: 1803
+      md5: 0109bb315809b4a2bf96da5d2983c0a6
+      size: 1737
     params:
       params.yaml:
         train:
@@ -105,8 +105,8 @@ stages:
       size: 424354
     - path: src/evaluate.py
       hash: md5
-      md5: 961a7b41abcef6a4ba7b450d7c48b953
-      size: 1117
+      md5: 8d0d5dc14ca142a9d9ba0eda65cc2349
+      size: 1078
     outs:
     - path: metrics/metrics.json
       hash: md5
