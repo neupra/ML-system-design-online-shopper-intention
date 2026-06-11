@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+pydantic
+onnxruntime
+joblib
+scikit-learn
+imbalanced-learn
+skl2onnx
+onnx
+xgboost
