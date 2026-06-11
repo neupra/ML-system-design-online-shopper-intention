@@ -10,105 +10,100 @@ stages:
       size: 1071988
     - path: src/preprocess.py
       hash: md5
-      md5: f71c341e42c71ec68f0b5df5785c4c3e
-      size: 8159
-    params:
-      params.yaml:
-        preprocess:
-          balancing: smoteenn
+      md5: 4564e1d49e34f4284c006f5cfa392d7f
+      size: 5205
     outs:
     - path: data/processed/metadata.json
       hash: md5
-      md5: 417f4d8ceaa0ee2c9bf1b2c862ef223c
-      size: 496
-    - path: data/processed/online_shoppers_intention_prepared.csv
+      md5: 7eed1165fe3fa8087085e817eb45facb
+      size: 441
+    - path: data/processed/online_shoppers_intention_cleaned.csv
       hash: md5
-      md5: c97dfa8cda2af7569f7defb754ba18a2
-      size: 9616027
-    - path: data/processed/preprocessor.joblib
-      hash: md5
-      md5: c5f8918fcbff6376fb6c7fb18de27899
-      size: 6273
+      md5: b805756ae83d06115cf9c0574fe9e8aa
+      size: 1739418
   split:
     cmd: python src/split.py 
-      data/processed/online_shoppers_intention_prepared.csv data/prepared
+      data/processed/online_shoppers_intention_cleaned.csv data/prepared
     deps:
-    - path: data/processed/online_shoppers_intention_prepared.csv
+    - path: data/processed/online_shoppers_intention_cleaned.csv
       hash: md5
-      md5: c97dfa8cda2af7569f7defb754ba18a2
-      size: 9616027
+      md5: b805756ae83d06115cf9c0574fe9e8aa
+      size: 1739418
     - path: src/split.py
       hash: md5
-      md5: 9ed7654c4885a99c9082b2d736ad2063
-      size: 842
+      md5: 30f19b82b3e4abbca13a0212354f79f4
+      size: 1559
     params:
       params.yaml:
-        split:
-          test_size: 0.2
-          random_state: 42
+        split.random_state: 42
+        split.test_size: 0.2
     outs:
     - path: data/prepared/test.csv
       hash: md5
-      md5: 5c6cd74ffc5e858eafbd300e2bc4b4e9
-      size: 1900473
+      md5: 74a12ae96220a5c1625857f5803116cf
+      size: 345730
     - path: data/prepared/train.csv
       hash: md5
-      md5: d428a93c92fe25f98f50b0ad746ca37f
-      size: 7595285
+      md5: 3c202ab062133a3846b68083b0982122
+      size: 1382242
   train:
     cmd: python src/train.py data/prepared/train.csv models/model.joblib
     deps:
     - path: data/prepared/train.csv
       hash: md5
-      md5: d428a93c92fe25f98f50b0ad746ca37f
-      size: 7595285
+      md5: 3c202ab062133a3846b68083b0982122
+      size: 1382242
     - path: src/train.py
       hash: md5
-      md5: 0109bb315809b4a2bf96da5d2983c0a6
-      size: 1737
+      md5: ae20a688cb1869ff1ba72e8b31517421
+      size: 6180
     params:
       params.yaml:
+        preprocess.balancing: smote
         train:
           algorithm: SVM
           random_state: 42
           LogisticRegression:
-            C: 1.0
             max_iter: 1000
+            class_weight: balanced
           SVM:
             C: 1.0
             kernel: rbf
             probability: true
+            class_weight: balanced
           RandomForest:
-            n_estimators: 100
-            max_depth: 10
+            n_estimators: 200
+            max_depth: 12
+            class_weight: balanced
           XGBoost:
-            n_estimators: 150
+            n_estimators: 200
+            max_depth: 5
             learning_rate: 0.05
-            max_depth: 6
-            eval_metric: logloss
+            subsample: 0.8
+            colsample_bytree: 0.8
     outs:
     - path: models/model.joblib
       hash: md5
-      md5: cd918f76401e8296a667172d4a0bea77
-      size: 1977339
+      md5: e444439a4ec1000888ee9bf5f36c9fa2
+      size: 4416495
   evaluate:
     cmd: python src/evaluate.py models/model.joblib data/prepared/test.csv 
       metrics/metrics.json
     deps:
     - path: data/prepared/test.csv
       hash: md5
-      md5: 5c6cd74ffc5e858eafbd300e2bc4b4e9
-      size: 1900473
+      md5: 74a12ae96220a5c1625857f5803116cf
+      size: 345730
     - path: models/model.joblib
       hash: md5
-      md5: cd918f76401e8296a667172d4a0bea77
-      size: 1977339
+      md5: e444439a4ec1000888ee9bf5f36c9fa2
+      size: 4416495
     - path: src/evaluate.py
       hash: md5
-      md5: 8d0d5dc14ca142a9d9ba0eda65cc2349
-      size: 1078
+      md5: f74c08ec7c5745aa40c17ff09d181c43
+      size: 2963
     outs:
     - path: metrics/metrics.json
       hash: md5
-      md5: 10116be735a2d12a833bb4c21c2e7c0a
-      size: 174
+      md5: 4bc5ac218f15c8d4392ffc3df89b054b
+      size: 422
