@@ -5,17 +5,17 @@ stages:
       - src/preprocess.py
       - data/online_shoppers_intention.csv
     outs:
-      - data/processed/online_shoppers_intention_prepared.csv
-      - data/processed/preprocessor.joblib
+      - data/processed/online_shoppers_intention_cleaned.csv
       - data/processed/metadata.json
 
   split:
-    cmd: python src/split.py data/processed/online_shoppers_intention_prepared.csv data/prepared
+    cmd: python src/split.py data/processed/online_shoppers_intention_cleaned.csv data/prepared
     deps:
       - src/split.py
-      - data/processed/online_shoppers_intention_prepared.csv
+      - data/processed/online_shoppers_intention_cleaned.csv
     params:
-      - split
+      - split.test_size
+      - split.random_state
     outs:
       - data/prepared/train.csv
       - data/prepared/test.csv
@@ -26,6 +26,7 @@ stages:
       - src/train.py
       - data/prepared/train.csv
     params:
+      - preprocess.balancing
       - train
     outs:
       - models/model.joblib

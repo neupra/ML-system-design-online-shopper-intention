@@ -1,19 +1,34 @@
+preprocess:
+  balancing: smote
+
 split:
   test_size: 0.2
   random_state: 42
 
 train:
-  model: random_forest
-  n_estimators: 100
-  max_depth: 12
+  algorithm: SVM
   random_state: 42
 
-preprocess:
-  balancing: smotetomek       #smote -SMOTE 
-                          # adasyn -ADASYN
-                          #borderline_smote -BorderlineSMOTE
-                          #random_oversample -RandomOverSampler
-                          #smotetomek -SMOTETomek
-                          #smoteenn -SMOTEENN
-                          #random_undersample -RandomUnderSampler
-                          #tomeklinks -TomekLinks
+  LogisticRegression:
+    max_iter: 1000
+    class_weight: balanced
+
+  SVM:
+    C: 1.0
+    kernel: rbf
+    probability: true
+    class_weight: balanced
+
+  RandomForest:
+    n_estimators: 200
+    max_depth: 12
+    class_weight: balanced
+
+  XGBoost:
+    n_estimators: 200
+    max_depth: 5
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    
+    
