@@ -31,6 +31,14 @@ stages:
     outs:
       - models/model.joblib
 
+  create_inference_model:
+    cmd: python src/create_inference_model.py models/model.joblib models/inference_model.joblib
+    deps:
+      - src/create_inference_model.py
+      - models/model.joblib
+    outs:
+      - models/inference_model.joblib    
+
   evaluate:
     cmd: python src/evaluate.py models/model.joblib data/prepared/test.csv metrics/metrics.json
     deps:

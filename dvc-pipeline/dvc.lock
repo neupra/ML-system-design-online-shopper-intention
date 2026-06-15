@@ -84,8 +84,8 @@ stages:
     outs:
     - path: models/model.joblib
       hash: md5
-      md5: e444439a4ec1000888ee9bf5f36c9fa2
-      size: 4416495
+      md5: 1115b0bb0486763f664c6598e173f062
+      size: 4415922
   evaluate:
     cmd: python src/evaluate.py models/model.joblib data/prepared/test.csv 
       metrics/metrics.json
@@ -96,8 +96,8 @@ stages:
       size: 345730
     - path: models/model.joblib
       hash: md5
-      md5: e444439a4ec1000888ee9bf5f36c9fa2
-      size: 4416495
+      md5: 1115b0bb0486763f664c6598e173f062
+      size: 4415922
     - path: src/evaluate.py
       hash: md5
       md5: 94451d309ba7ceec67283d416c2260f4
@@ -107,3 +107,20 @@ stages:
       hash: md5
       md5: 4bc5ac218f15c8d4392ffc3df89b054b
       size: 422
+  create_inference_model:
+    cmd: python src/create_inference_model.py models/model.joblib 
+      models/inference_model.joblib
+    deps:
+    - path: models/model.joblib
+      hash: md5
+      md5: 1115b0bb0486763f664c6598e173f062
+      size: 4415922
+    - path: src/create_inference_model.py
+      hash: md5
+      md5: 3186b81c392fe16fb5eb37df08f43049
+      size: 1523
+    outs:
+    - path: models/inference_model.joblib
+      hash: md5
+      md5: fb04ac80ee708208486b13a79527b336
+      size: 3573397

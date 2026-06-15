@@ -1,5 +1,9 @@
 venv/
 dvc-pipeline/venv/
+
 __pycache__/
+**/__pycache__/
 *.pyc
+
 .env
+.dvc/tmp/
