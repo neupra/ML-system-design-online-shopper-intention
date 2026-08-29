@@ -1,59 +1,84 @@
 # 🛒 Online Shoppers Intention — ML System Design
 
-An end-to-end **ML System Design** project for predicting online shoppers' purchase intention. This repository is structured to support the full ML lifecycle — from data versioning to model serving.
+An end-to-end **ML System Design** project for predicting online shoppers' purchase intention. The project is designed around a reproducible ML lifecycle, including data versioning, pipeline automation, model training, inference model creation, and model serving.
 
 ---
 
 ## 🗺️ Project Roadmap
 
-| Part | Topic | Status |
-|---|---|---|
-| **Part 1** | Data Versioning & ML Pipeline (DVC) | ✅ Done |
-| **Part 2** | Experiment Tracking (MLflow) | 🔜 Coming |
-| **Part 3** | Model Serving & API | 🔜 Coming |
-| **Part 4** | Monitoring & Drift Detection | 🔜 Coming |
+| Part       | Topic                               | Status         |
+| ---------- | ----------------------------------- | -------------- |
+| **Part 1** | Data Versioning & ML Pipeline (DVC) | ✅ Done         |
+| **Part 2** | Experiment Tracking (MLflow)        | 🔜 Coming      |
+| **Part 3** | Model Serving & API                 | 🚧 In Progress |
+| **Part 4** | Monitoring & Drift Detection        | 🔜 Coming      |
 
 ---
 
 ## 📁 Repository Structure
 
-```
+```text
 ml-system-design/
-├── dvc-pipeline/          # Part 1: Data versioning & ML pipeline
+│
+├── dvc-pipeline/                  # Part 1: Data versioning & ML pipeline
 │   ├── src/
-│   │   ├── preprocess.py
-│   │   ├── split.py
-│   │   ├── train.py
-│   │   └── evaluate.py
+│   │   ├── preprocess.py          # Data preprocessing
+│   │   ├── split.py               # Train-test splitting
+│   │   ├── train.py               # Model training
+│   │   ├── evaluate.py            # Model evaluation
+│   │   └── create_inference_model.py
+│   │
 │   ├── data/
+│   │   ├── online_shoppers_intention.csv
+│   │   ├── processed/
+│   │   └── prepared/
+│   │
 │   ├── models/
+│   │   ├── model.joblib
+│   │   └── inference_model.joblib
+│   │
 │   ├── metrics/
+│   │   └── metrics.json
+│   │
 │   ├── dvc.yaml
 │   └── params.yaml
 │
-├── serving/               # Part 3: Model serving (coming soon)
-├── monitoring/            # Part 4: Monitoring (coming soon)
+├── serving/                       # Part 3: Model serving & API
+│   └── app/
+│       ├── main.py                # FastAPI application
+│       ├── model_loader.py        # Model loading
+│       ├── preprocessing.py       # Inference preprocessing
+│       └── schemas.py              # Input validation schemas
+│
+├── monitoring/                    # Part 4: Monitoring & drift detection
+│
 └── README.md
 ```
 
 ---
 
-## Part 1: DVC Pipeline
+# Part 1: Data Versioning & ML Pipeline
 
-### 📊 Dataset
+## 📊 Dataset
 
 **Online Shoppers Purchasing Intention Dataset**
 
-| Property | Value |
-|---|---|
-| Total rows | 12,330 |
-| Features | 18 |
-| Target | `Revenue` (Binary: 0/1) |
-| Class distribution | 0 → 10,422 \| 1 → 1,908 (Imbalanced) |
+The dataset contains session-level information about online shoppers and whether a purchase was completed during the session.
+
+| Property           | Value              |
+| ------------------ | ------------------ |
+| Total rows         | 12,330             |
+| Features           | 18                 |
+| Target             | `Revenue` (Binary) |
+| Class 0            | 10,422             |
+| Class 1            | 1,908              |
+| Class distribution | Imbalanced         |
 
 ---
 
-### ⚙️ Setup
+## ⚙️ Setup
+
+Install the required dependencies:
 
 ```bash
 pip install "pathspec==0.11.2"
@@ -61,135 +86,468 @@ pip install "dvc[all]"
 pip install pandas scikit-learn imbalanced-learn pyyaml joblib numpy
 ```
 
+Initialize Git and DVC:
+
 ```bash
 git init
 dvc init
+```
+
+Track the dataset with DVC:
+
+```bash
 dvc add data/online_shoppers_intention.csv
+```
+
+Commit the DVC configuration:
+
+```bash
 git add .
 git commit -m "Initialize DVC pipeline"
 ```
 
 ---
 
-### 🔄 Pipeline
+## 🔄 ML Pipeline
 
+The current DVC pipeline is:
+
+```text
+preprocess → split → train → create_inference_model → evaluate
 ```
-preprocess → split → train → evaluate
-```
 
-| Stage | Input | Output |
-|---|---|---|
-| **preprocess** | Raw CSV | Cleaned + Balanced CSV |
-| **split** | Processed CSV | train.csv, test.csv |
-| **train** | train.csv | model.joblib |
-| **evaluate** | model.joblib, test.csv | metrics.json |
+### Pipeline Stages
 
----
+| Stage                      | Input            | Output                   |
+| -------------------------- | ---------------- | ------------------------ |
+| **preprocess**             | Raw CSV          | Cleaned CSV + metadata   |
+| **split**                  | Cleaned CSV      | `train.csv` + `test.csv` |
+| **train**                  | Training CSV     | `model.joblib`           |
+| **create_inference_model** | Trained model    | `inference_model.joblib` |
+| **evaluate**               | Model + test CSV | `metrics.json`           |
 
-### 🧪 Experiments
+Run the complete pipeline using:
 
-**Run Pipeline:**
 ```bash
 dvc repro
 ```
 
-**Change Balancing Technique** — edit `params.yaml`:
+DVC automatically determines which stages need to be rerun when dependencies or parameters change.
+
+---
+
+## ⚖️ Class Imbalance Handling
+
+The target variable `Revenue` is imbalanced:
+
+```text
+Class 0 → 10,422 sessions
+Class 1 →  1,908 sessions
+```
+
+The training pipeline supports multiple balancing techniques through `params.yaml`.
+
+Current configuration:
 
 ```yaml
 preprocess:
   balancing: smote
 ```
 
-| Value | Technique | Type |
-|---|---|---|
-| `smote` | SMOTE | Oversampling |
-| `adasyn` | ADASYN | Oversampling |
-| `borderline_smote` | BorderlineSMOTE | Oversampling |
-| `random_oversample` | RandomOverSampler | Oversampling |
-| `smotetomek` | SMOTETomek | Combination |
-| `smoteenn` | SMOTEENN | Combination |
-| `random_undersample` | RandomUnderSampler | Undersampling |
-| `tomeklinks` | TomekLinks | Undersampling |
-| `nearmiss` | NearMiss | Undersampling |
-| `none` | No balancing | — |
+Supported techniques:
 
-**Change Model Parameters** — edit `params.yaml`:
+| Value                | Technique          | Type          |
+| -------------------- | ------------------ | ------------- |
+| `smote`              | SMOTE              | Oversampling  |
+| `adasyn`             | ADASYN             | Oversampling  |
+| `borderline_smote`   | BorderlineSMOTE    | Oversampling  |
+| `random_oversample`  | RandomOverSampler  | Oversampling  |
+| `smotetomek`         | SMOTETomek         | Combination   |
+| `smoteenn`           | SMOTEENN           | Combination   |
+| `random_undersample` | RandomUnderSampler | Undersampling |
+| `tomeklinks`         | TomekLinks         | Undersampling |
+| `nearmiss`           | NearMiss           | Undersampling |
+| `none`               | No balancing       | —             |
+
+> Balancing is applied during model training and is not applied to the test data.
+
+---
+
+## 🤖 Models
+
+The training configuration supports:
+
+* Logistic Regression
+* Support Vector Machine (SVM)
+* Random Forest
+* XGBoost
+
+Example configuration:
 
 ```yaml
 train:
-  model: random_forest
-  n_estimators: 100
-  max_depth: 12
-  random_state: 42
+  algorithm: SVM
+
+  LogisticRegression:
+    max_iter: 1000
+    class_weight: balanced
+
+  SVM:
+    C: 1.0
+    kernel: rbf
+    probability: true
+    class_weight: balanced
+
+  RandomForest:
+    n_estimators: 200
+    max_depth: 12
+    class_weight: balanced
+
+  XGBoost:
+    n_estimators: 200
+    max_depth: 5
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
 ```
+
+Model configuration is separated from the source code using `params.yaml`, allowing experiments without modifying the training code.
 
 ---
 
-### 📈 Metrics
+## 📈 Model Evaluation
 
-```bash
-dvc metrics show          # current metrics
-dvc metrics diff HEAD~1 HEAD   # compare versions
+The evaluation pipeline generates:
+
+```text
+metrics/metrics.json
 ```
 
-| Metric | Description |
-|---|---|
-| `accuracy` | Overall accuracy |
-| `precision` | Weighted precision |
-| `recall` | Weighted recall |
-| `f1_score` | Weighted F1 score |
-| `roc_auc` | ROC-AUC score |
+Current evaluation metrics include:
+
+| Metric      | Purpose                                 |
+| ----------- | --------------------------------------- |
+| `accuracy`  | Overall classification accuracy         |
+| `precision` | Correctness of positive predictions     |
+| `recall`    | Ability to identify purchasing sessions |
+| `f1_score`  | Balance between precision and recall    |
+| `roc_auc`   | Overall ranking/discrimination ability  |
+
+Because the target class is imbalanced, **F1-score, Recall, Precision, and ROC-AUC** are considered alongside accuracy.
 
 ---
 
-### 🗂️ Version Control Workflow
+## 🧪 DVC Experiments
+
+Run the pipeline:
 
 ```bash
 dvc repro
+```
+
+Change parameters in `params.yaml` and reproduce the pipeline.
+
+For example:
+
+```yaml
+preprocess:
+  balancing: smote
+```
+
+or:
+
+```yaml
+preprocess:
+  balancing: adasyn
+```
+
+Then run:
+
+```bash
+dvc repro
+```
+
+Compare metrics:
+
+```bash
+dvc metrics show
+```
+
+```bash
+dvc metrics diff HEAD~1 HEAD
+```
+
+---
+
+## 🗂️ Data & Model Versioning
+
+DVC is used to track datasets and ML pipeline outputs while Git tracks source code and configuration.
+
+Example workflow:
+
+```bash
+dvc repro
+
 git add .
-git commit -m "Experiment: SMOTE, RF n_estimators=100"
+git commit -m "Experiment: SMOTE with SVM"
 git push
 ```
 
-**Go to the Previous version :**
+### Restore a Previous Version
+
 ```bash
 git log --oneline
 git checkout <commit-id>
 dvc checkout
 ```
 
-**Return to the Latest:**
+### Return to Latest Version
+
 ```bash
 git checkout main
 dvc checkout
 ```
 
----
-
-### 📋 Feature Engineering
-
-| Feature | Formula |
-|---|---|
-| `TotalSessionDuration` | Admin + Info + ProductRelated Duration |
-| `ProductInfoRatio` | ProductRelated / (Informational + 1) |
-| `EngagementScore` | PageValues / (TotalSessionDuration + 1) |
-| `Month_sin` | Cyclic encoding of month |
-| `Month_cos` | Cyclic encoding of month |
+This allows previous dataset/model states and experiment configurations to be reproduced.
 
 ---
 
-## Part 2: Experiment Tracking — Coming Soon
+## 🛠️ Feature Engineering
 
-MLflow integration for tracking experiments, parameters, and model registry.
+The pipeline creates additional features to represent user engagement and session behavior.
+
+| Feature                | Formula                                                                     |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `TotalSessionDuration` | Administrative Duration + Informational Duration + Product Related Duration |
+| `ProductInfoRatio`     | Product Related / (Informational + 1)                                       |
+| `EngagementScore`      | Page Value / (Total Session Duration + 1)                                   |
+| `Month_sin`            | Cyclic encoding of month                                                    |
+| `Month_cos`            | Cyclic encoding of month                                                    |
 
 ---
 
-## Part 3: Model Serving — Coming Soon
+# Part 2: Experiment Tracking — Coming Soon
 
-REST API for model inference using FastAPI/Flask.
+**MLflow** will be integrated to track:
+
+* Model parameters
+* Training metrics
+* Experiments
+* Model versions
+* Experiment comparisons
+
+Planned workflow:
+
+```text
+DVC Pipeline
+     ↓
+Model Training
+     ↓
+MLflow Experiment Tracking
+     ↓
+Model Comparison
+     ↓
+Best Model
+```
 
 ---
 
-## Part 4: Monitoring — Coming Soon
+# Part 3: Model Serving & API — 🚧 In Progress
 
-Data drift detection and model performance monitoring.
+A model serving layer is being developed using **FastAPI**.
+
+The serving system provides:
+
+### Single Prediction
+
+```text
+POST /predict
+```
+
+### Batch Prediction
+
+```text
+POST /predict_batch
+```
+
+The serving pipeline performs:
+
+```text
+User Session Data
+        ↓
+Input Validation
+        ↓
+Feature Engineering
+        ↓
+Preprocessing
+        ↓
+Inference Model
+        ↓
+Prediction + Probability
+        ↓
+JSON Response
+```
+
+The inference model is generated separately from the training model:
+
+```text
+model.joblib
+      ↓
+create_inference_model.py
+      ↓
+inference_model.joblib
+```
+
+The inference model contains the preprocessing and trained model required for prediction while excluding training-only operations such as SMOTE.
+
+This separation ensures that synthetic oversampling is performed only during training and not during inference.
+
+---
+
+# Part 4: Monitoring & Drift Detection — 🔜 Coming Soon
+
+The monitoring layer will focus on maintaining model reliability after deployment.
+
+Planned components include:
+
+* Data drift detection
+* Feature distribution monitoring
+* Prediction distribution monitoring
+* Model performance monitoring
+* Drift alerts
+* Retraining triggers
+
+Planned workflow:
+
+```text
+Production Data
+      ↓
+Monitoring
+      ↓
+Drift Detection
+      ↓
+Performance Check
+      ↓
+Alert / Retrain
+```
+
+---
+
+# 🏗️ Overall ML System Architecture
+
+```text
+                    ┌──────────────────┐
+                    │   Raw Dataset    │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Data Preprocess  │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Train/Test Split │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Model Training   │
+                    │ + SMOTE          │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Model Evaluation │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Inference Model  │
+                    └────────┬─────────┘
+                             ↓
+══════════════════════════════════════════════════
+                    ONLINE SERVING
+══════════════════════════════════════════════════
+                             ↓
+                    ┌──────────────────┐
+                    │   FastAPI API    │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Input Validation │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Feature Pipeline │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Inference Model  │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Prediction +     │
+                    │ Probability      │
+                    └────────┬─────────┘
+                             ↓
+══════════════════════════════════════════════════
+                       MONITORING
+══════════════════════════════════════════════════
+                             ↓
+                    Drift & Performance
+                       Monitoring
+```
+
+---
+
+# 🎯 Project Goals
+
+The system is designed around three business objectives:
+
+### 1. Maximize Sales
+
+Identify sessions with a high probability of purchase and enable targeted actions.
+
+### 2. Reduce Advertising Cost
+
+Avoid unnecessarily targeting sessions with a low probability of conversion.
+
+### 3. Maintain a Balanced System
+
+Use appropriate classification metrics and probability-based predictions to balance sales opportunities and marketing costs.
+
+---
+
+# 🚀 Future Improvements
+
+* MLflow experiment tracking
+* Model registry
+* Production deployment
+* Data drift detection
+* Model performance monitoring
+* Automated retraining
+* Online learning
+* Cloud deployment
+* CI/CD for ML pipelines
+
+---
+
+## 👨‍💻 Technologies
+
+```text
+Python
+Pandas
+NumPy
+Scikit-learn
+XGBoost
+Imbalanced-learn
+DVC
+Git
+GitHub
+Joblib
+PyYAML
+FastAPI
+```
+
+---
+
+## 📌 Project Status
+
+The project is being developed incrementally as an **end-to-end ML Systems Design project**, with emphasis on reproducibility, modularity, scalable inference, and the complete ML lifecycle.
+
